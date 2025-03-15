@@ -409,6 +409,11 @@ class PembayaranController extends Controller
             \App\Models\Tunggakan::where('user_id', $input['payment_dedication_admin'])
                 ->where('payment_id', -1)
                 ->delete();
+
+            User::where('id', $input['payment_dedication_admin'])->update([
+                "last_payment_date" => date('Y-m-d'),
+                "last_payment_period" => $payment->periode
+            ]);
         }
 
         if ($res) {

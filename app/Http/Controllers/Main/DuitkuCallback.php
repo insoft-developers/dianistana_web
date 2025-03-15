@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Main;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class DuitkuCallback extends Controller
@@ -63,8 +64,13 @@ class DuitkuCallback extends Controller
                         \App\Models\Tunggakan::where('user_id', $trans->user_id)
                             ->where('payment_id', -1)->delete();
 
-                    }
 
+                        User::where('id', $trans->user_id)->update([
+                            "last_payment_date" => date('Y-m-d'),
+                            "last_payment_period" => $payment->periode
+                        ]);
+
+                    }
 
                     return response()->json([
                         "success" => true,

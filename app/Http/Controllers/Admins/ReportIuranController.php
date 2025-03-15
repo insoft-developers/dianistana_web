@@ -118,7 +118,7 @@ class ReportIuranController extends Controller
             $start = $thn.'-'.$bln.'-01';
             $end = $thn.'-'.$bln.'-31';
             $query = DB::table('payment_details')
-                                ->select('payment_details.*', 'payments.payment_name', 'payments.due_date','payments.periode')
+                                ->select('payment_details.*', 'payments.payment_name', 'payments.due_date','payments.periode','users.last_payment_date', 'users.last_payment_period')
                                 ->join('payments', 'payments.id', '=', 'payment_details.payment_id')
                                 ->join('users', 'users.id', '=', 'payment_details.user_id')
                                 ->where('payments.payment_type', 1)
@@ -129,7 +129,7 @@ class ReportIuranController extends Controller
                                 
         } else {
             $query = DB::table('payment_details')
-                                ->select('payment_details.*', 'payments.payment_name', 'payments.due_date','payments.periode')
+                                ->select('payment_details.*', 'payments.payment_name', 'payments.due_date','payments.periode', 'users.last_payment_date', 'users.last_payment_period')
                                 ->join('payments', 'payments.id', '=', 'payment_details.payment_id')
                                 ->join('users', 'users.id', '=', 'payment_details.user_id')
                                 ->where('payments.payment_type', 1)

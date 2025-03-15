@@ -60,6 +60,7 @@
                                     <th>Status</th>
                                     <th>Name</th>
                                     <th>Birthday</th>
+                                    <th>Last Payment</th>
                                     <th>User</th>
                                     <th>Blok</th>
                                     <th>No Rumah</th>

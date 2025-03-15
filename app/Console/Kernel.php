@@ -15,9 +15,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('expired_booking:cron')->everyMinute();
         $schedule->command('notif_bulanan:cron')->daily();
         $schedule->command('due-date:cron')->daily();
-	$schedule->command('iuran:cron')->daily();
+        $schedule->command('iuran:cron')->daily();
         $schedule->command('tunggakan:cron')->daily();
-	$schedule->command('zero:cron')->daily();
+        $schedule->command('zero:cron')->daily();
+        $schedule->command('resolve:cron')->everyMinute();
     }
 
     /**
@@ -25,7 +26,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

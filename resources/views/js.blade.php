@@ -121,6 +121,10 @@
                         name: 'birthday'
                     },
                     {
+                        data: 'last_payment',
+                        name: 'last_payment'
+                    },
+                    {
                         data: 'user',
                         name: 'user'
                     },
@@ -2722,6 +2726,11 @@
 
 @if ($view == 'outstanding')
     <script>
+
+
+       
+
+
         var table = $('#listTable').DataTable({
             processing: true,
             serverSide: true,
@@ -2793,6 +2802,11 @@
                     name: 'last_paid'
                 },
             ]
+        });
+
+        table.on( 'draw', function () {
+            var next_bil = $(".next-bill").length;
+            console.log(next_bil);
         });
 
         function add_adjustment(id) {

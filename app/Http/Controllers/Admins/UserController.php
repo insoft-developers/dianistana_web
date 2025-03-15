@@ -48,6 +48,14 @@ class UserController extends Controller
         }
         $user = $query->get();
         return DataTables::of($user)
+            ->addColumn('last_payment', function($data){
+                if($data->last_payment_date == null) {
+                    return '';
+                } else {
+                    return date('d-m-Y', strtotime($data->last_payment_date)).'<br>( '.$data->last_payment_period.' )';
+                }
+                
+            })
             ->addColumn('birthday', function($user){
                 return $user->birthday == null ? '-' : date('d-m-Y', strtotime($user->birthday));
             })
@@ -93,7 +101,7 @@ class UserController extends Controller
                 }
 
                 return $button;
-        })->rawColumns(['action','is_active','foto','user'])
+        })->rawColumns(['action','is_active','foto','user','last_payment'])
         ->addIndexColumn()
         ->make(true);
     }

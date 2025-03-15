@@ -29,63 +29,71 @@ class OutstandingController extends Controller
             ->addColumn('iuran', function($data){
                 return '<div style="text-align:right;">'.number_format($data->iuran_bulanan).'</div>';
             })
+
             ->addColumn('last_paid', function($data){
-                $d = DB::table('payment_details')
-                    ->select('payment_details.*','payments.periode')
-                    ->join('payments', 'payments.id', '=', 'payment_details.payment_id')
-                    ->where('payment_details.user_id', $data->id)
-                    ->where('payment_details.payment_status', 'PAID')
-                    ->where('payments.payment_type', 1)
-                    ->orderBy('payment_details.id', 'desc');
-                
-                if($d->count() > 0) {
-                    $m = $d->first();
-                    $pr = $m->periode;
-                    $st = substr($pr, 0,2);
-                    $sb = substr($pr, 3,4);
-                    
-                    if($st == '01') {
-                        $bl = 'Jan';
-                    }
-                    else if($st == '02') {
-                        $bl = 'Feb';
-                    }
-                    else if($st == '03') {
-                        $bl = 'Mar';
-                    }
-                    else if($st == '04') {
-                        $bl = 'Apr';
-                    }
-                    else if($st == '05') {
-                        $bl = 'Mei';
-                    }
-                    else if($st == '06') {
-                        $bl = 'Jun';
-                    }
-                    else if($st == '07') {
-                        $bl = 'Jul';
-                    }
-                    else if($st == '08') {
-                        $bl = 'Aug';
-                    }
-                    else if($st == '09') {
-                        $bl = 'Sep';
-                    }
-                    else if($st == '10') {
-                        $bl = 'Okt';
-                    }else if($st == '11') {
-                        $bl = 'Nov';
-                    }else if($st == '12') {
-                        $bl = 'Dec';
-                    }
-                    
-                    $text = $bl.'-'.$sb;
+                if($data->last_payment_date == null) {
+                    return '';
                 } else {
-                    $text = 'Unavailable';
+                    return date('d-m-Y', strtotime($data->last_payment_date)).'<br>( '.$data->last_payment_period.' )';
                 }
+                // $d = DB::table('payment_details')
+                //     ->select('payment_details.*','payments.periode')
+                //     ->join('payments', 'payments.id', '=', 'payment_details.payment_id')
+                //     ->where('payment_details.user_id', $data->id)
+                //     ->where('payment_details.payment_status', 'PAID')
+                //     ->where('payments.payment_type', 1)
+                //     ->orderBy('payment_details.id', 'desc');
+                
+                // if($d->count() > 0) {
+                //     $m = $d->first();
+                //     $pr = $m->periode;
+                //     $st = substr($pr, 0,2);
+                //     $sb = substr($pr, 3,4);
+                    
+                //     if($st == '01') {
+                //         $bl = 'Jan';
+                //     }
+                //     else if($st == '02') {
+                //         $bl = 'Feb';
+                //     }
+                //     else if($st == '03') {
+                //         $bl = 'Mar';
+                //     }
+                //     else if($st == '04') {
+                //         $bl = 'Apr';
+                //     }
+                //     else if($st == '05') {
+                //         $bl = 'Mei';
+                //     }
+                //     else if($st == '06') {
+                //         $bl = 'Jun';
+                //     }
+                //     else if($st == '07') {
+                //         $bl = 'Jul';
+                //     }
+                //     else if($st == '08') {
+                //         $bl = 'Aug';
+                //     }
+                //     else if($st == '09') {
+                //         $bl = 'Sep';
+                //     }
+                //     else if($st == '10') {
+                //         $bl = 'Okt';
+                //     }else if($st == '11') {
+                //         $bl = 'Nov';
+                //     }else if($st == '12') {
+                //         $bl = 'Dec';
+                //     }
+                    
+                //     $text = $bl.'-'.$sb;
+                // } else {
+                //     $text = 'Unavailable';
+                // }
                     
 
-                return $text;
+                // return $text;
+
+
             })
              ->addColumn('denda', function($data) use ($setting){
                 $tunggakan = Tunggakan::where('user_id', $data->id)->where('amount', '!=', 0)->where('payment_id', '>', 0)->sum('amount');
@@ -138,7 +146,36 @@ class OutstandingController extends Controller
     public function index()
     {
         $view = "outstanding";
-        return view('admins.outstanding.index', compact('view'));
+        
+        
+        $users = User::where('level', 'user')->get();
+        $setting = Setting::find(1);
+
+        $next_bill = 0;
+        $saldo_awal = 0;
+        $total_denda = 0;
+        $total_iuran = 0;
+        $total_penyesuaian = 0;
+
+        foreach($users as $data) {
+            $total_iuran = $total_iuran + $data->iuran_bulanan;
+
+            $tunggakan = Tunggakan::where('user_id', $data->id)->where('amount', '!=', 0)->where('payment_id', '>', 0)->sum('amount');
+            $saldo_awal = $saldo_awal + $tunggakan;
+            $adjust = Tunggakan::where('user_id', $data->id)->where('payment_id', -1)->sum('amount');
+            $total_penyesuaian = $total_penyesuaian + $adjust;
+            $denda = $setting->percent_denda;
+            $angka_denda = $tunggakan * $denda / 100;
+            $nominal = $this->pembulatan((int)$angka_denda);
+            $total_denda = $total_denda + $nominal;
+
+            $total = $nominal + $tunggakan;
+            $next = $total + $data->iuran_bulanan + $adjust;
+            $next_bill = $next_bill + $next;
+        }
+        
+
+        return view('admins.outstanding.index', compact('view', 'next_bill','saldo_awal','total_denda','total_iuran', 'total_penyesuaian'));
     }
 
     /**

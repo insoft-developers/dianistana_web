@@ -44,6 +44,7 @@ use Illuminate\Support\Facades\Hash;
 
 // Route::get('/',[DashboardMainController::class, 'index'])->name("home_public");
 Route::get('/',[AuthUsersController::class, 'login'])->name("home_public");
+
 // Route::get('register-user',[AuthUsersController::class, 'index_register'])->name("register_user");
 // Route::get('auth-user',[AuthUsersController::class, 'index_login'])->name('login_user');
 // Route::get('/dashboard', [DashboardMainController::class, 'dashboard']);
