@@ -120,7 +120,8 @@ class DashboardController extends Controller
             $row['blok'] = $q->blok;
             $row['penyelia'] = $q->penyelia;
             $row['nomor_rumah'] = $q->nomor_rumah;
-
+            $row['last_payment_date'] = $q->last_payment_date;
+            $row['last_payment_period'] = $q->last_payment_period;
             $d = DB::table('payment_details')
                     ->select('payment_details.*','payments.periode')
                     ->join('payments', 'payments.id', '=', 'payment_details.payment_id')
@@ -150,23 +151,11 @@ class DashboardController extends Controller
                 return '<div style="text-align:right;">'.number_format($data['iuran_bulanan']).'</div>';
             })
             ->addColumn('last_paid', function($data){
-                $d = DB::table('payment_details')
-                    ->select('payment_details.*','payments.periode')
-                    ->join('payments', 'payments.id', '=', 'payment_details.payment_id')
-                    ->where('payment_details.user_id', $data['id'])
-                    ->where('payment_details.payment_status', 'PAID')
-                    ->where('payments.payment_type', 1)
-                    ->orderBy('payment_details.id', 'desc');
-                
-                if($d->count() > 0) {
-                    $m = $d->first();
-                    $text = $m->periode;
+                if($data['last_payment_date'] == null) {
+                    return '';
                 } else {
-                    $text = 'Unavailable';
+                    return date('d-m-Y', strtotime($data['last_payment_date'])).'<br>( '.$data['last_payment_period'].' )';
                 }
-                    
-
-                return '<div style="text-align:right">'.$text.'</div>';
             })
              ->addColumn('denda', function($data) use ($setting){
                 $tunggakan = Tunggakan::where('user_id', $data['id'])->where('amount', '!=', 0)->where('payment_id', '>', 0)->sum('amount');
